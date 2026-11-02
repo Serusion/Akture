@@ -1,0 +1,15 @@
+#
+# PAM configuration for the "akture-autologin" service.  akture(8)
+# uses it only for the user named by autologin_user in akture.conf(5),
+# so authentication is not asked for; the account and session are
+# handled as for any other login.
+#
+
+# auth
+auth		required	pam_permit.so
+
+# account
+account		include		system
+
+# session
+session		include		system

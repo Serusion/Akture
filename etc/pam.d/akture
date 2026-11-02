@@ -1,0 +1,16 @@
+#
+# PAM configuration for the "akture" service: logins through the
+# akture(8) display manager.
+#
+
+# auth
+auth		include		system
+
+# account
+account		include		system
+
+# session
+session		include		system
+
+# password
+password	include		system

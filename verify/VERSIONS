@@ -1,0 +1,7 @@
+# Tools used by verify/ and spec/.  CI installs exactly these.
+frama-c		33.0 (Arsenic)
+why3		1.8.2
+alt-ergo	2.6.4
+z3		4.13.4
+cvc5		1.2.0
+tla2tools	TLC 2.19 (rev 5a47802)

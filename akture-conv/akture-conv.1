@@ -1,0 +1,101 @@
+.\" Copyright (c) 2026 Serusion
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.Dd November 2, 2026
+.Dt AKTURE-CONV 1
+.Os
+.Sh NAME
+.Nm akture-conv
+.Nd convert a picture into an akture background
+.Sh SYNOPSIS
+.Nm
+.Fl s Ar W Ns x Ns Ar H
+.Op Fl m Cm fill | fit | center
+.Op Fl b Ar radius
+.Op Fl d Ar percent
+.Op Fl c Ar #RRGGBB
+.Fl o Ar output.akbg
+.Ar input
+.Sh DESCRIPTION
+.Nm
+converts a PNG or JPEG picture into the
+.Pa .akbg
+format shown by
+.Xr akture-greeter 8 :
+a 32 byte header followed by BGRX pixels that need no further
+processing.
+The output size must be given; the screen is never queried.
+Files are named
+.Ar name Ns - Ns Ar W Ns x Ns Ar H Ns .akbg
+and placed in
+.Pa /usr/share/akture/backgrounds .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl s Ar W Ns x Ns Ar H
+Size of the output, at most 16384 on each side.
+.It Fl m Ar mode
+How a picture of another aspect ratio is fitted:
+.Cm fill
+covers the output and crops the excess (the default),
+.Cm fit
+fits the picture inside and pads with the colour of
+.Fl c ,
+.Cm center
+does not scale at all.
+.It Fl b Ar radius
+Blur with this radius in output pixels.
+.It Fl d Ar percent
+Darken by up to this amount.
+The full amount is applied at the top and bottom edges, fading to
+40% of it in the middle, which gives the faint shadows behind the
+clock and the login controls.
+.It Fl c Ar #RRGGBB
+Colour for padding and for transparent parts of PNG pictures;
+black by default.
+.It Fl o Ar output.akbg
+Output file.
+It is written under a temporary name and renamed into place.
+.El
+.Pp
+Scaling and blurring are done in linear light, so that reduced
+pictures do not darken.
+The EXIF orientation of JPEG pictures is applied.
+Grey, palette, 16-bit and transparent PNG pictures are converted to
+8-bit RGB.
+.Sh SECURITY CONSIDERATIONS
+Pictures are decoded in a child process.
+When run as root, the child drops to the user
+.Dq _akture
+first, and only sends the resulting pixels back over a pipe.
+Pictures larger than 16384 pixels on a side or 64 million pixels in
+total are refused before they are decoded.
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+.Bd -literal -offset indent
+akture-conv -s 1366x768 -d 35 \e
+    -o /usr/share/akture/backgrounds/autumn-1366x768.akbg autumn.jpg
+.Ed
+.Sh SEE ALSO
+.Xr akture.conf 5 ,
+.Xr akture-greeter 8

@@ -1,0 +1,74 @@
+.\" Copyright (c) 2026 Serusion
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.Dd November 2, 2026
+.Dt AKTURE-GREETER 8
+.Os
+.Sh NAME
+.Nm akture-greeter
+.Nd login screen of the akture display manager
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+.Nm
+draws the login screen of
+.Xr akture 8 .
+It is started by
+.Xr akture 8
+as the unprivileged user
+.Dq _akture
+with its end of a socketpair on descriptor 3, and is not meant to be
+run by hand.
+It reads no configuration itself: the options meant for it, the
+sessions and the last user arrive from the master.
+.Pp
+The screen is drawn into a shared memory image with
+.Xr pixman 3
+and FreeType, and sent with MIT-SHM; no drawing requests or extensions
+of the X server are used otherwise.
+Only the parts that changed are drawn and sent, so the greeter uses no
+CPU while nothing happens apart from updating the clock once a minute.
+Backgrounds are mapped from
+.Pa .akbg
+files without conversion.
+The keyboard is grabbed for the whole time the screen is shown.
+.Ss Keys
+.Bl -tag -width "BackSpace" -compact
+.It Tab
+move to the next control (Shift+Tab: previous)
+.It Enter
+log in, or activate the selected control
+.It BackSpace
+delete the last character
+.It Ctrl+U
+clear the field
+.It Esc
+clear the field and return to the last user
+.El
+.Pp
+The controls are the field, the session menu, the switch to another
+user, the keyboard layout and, if allowed, the power menu.
+Characters typed while another control is selected go to the field.
+.Sh SEE ALSO
+.Xr akture-conv 1 ,
+.Xr akture.conf 5 ,
+.Xr akture 8

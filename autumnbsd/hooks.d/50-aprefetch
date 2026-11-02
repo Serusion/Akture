@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# akture(8) hook shipped by AutumnBSD: let aprefetch read ahead while
+# the password is being typed.  Akture itself knows nothing about
+# aprefetch; this hook is the whole integration.
+#
+#	greeter-shown <last user>
+#		start prefetching the profile of the last user
+#	auth-ok <user> <session>
+#		switch profiles if somebody else logged in
+#	session-started <user> <session>
+#		close the boot recording window
+#
+# XXX The aprefctl(8) subcommands and profile names follow the
+# aprefetch design; adjust them together with it.
+#
+
+APREFCTL=/usr/sbin/aprefctl
+STATE=/var/run/akture/aprefetch-user
+
+profile()
+{
+	echo "akture-$1"
+}
+
+[ -x "$APREFCTL" ] || exit 0
+
+case "$1" in
+greeter-shown)
+	[ -n "$2" ] || exit 0
+	echo "$2" > "$STATE"
+	exec "$APREFCTL" start "$(profile "$2")"
+	;;
+auth-ok)
+	if [ "$2" != "$(cat "$STATE" 2>/dev/null)" ]; then
+		echo "$2" > "$STATE"
+		exec "$APREFCTL" switch "$(profile "$2")"
+	fi
+	;;
+session-started)
+	exec "$APREFCTL" boot-done
+	;;
+esac
+exit 0

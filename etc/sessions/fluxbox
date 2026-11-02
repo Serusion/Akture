@@ -1,0 +1,5 @@
+# Session offered by akture(8); see akture.conf(5).
+# The command is run without a shell, split at blanks.
+
+name = Fluxbox
+exec = /usr/pkg/bin/startfluxbox

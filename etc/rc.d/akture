@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# PROVIDE: akture
+# REQUIRE: DAEMON LOGIN wscons
+# KEYWORD: shutdown
+#
+# XXX The place of akture in the boot order is still open; it should
+# wait for nothing it does not need (see SPECIFICATION.md).
+#
+
+$_rc_subr_loaded . /etc/rc.subr
+
+name="akture"
+rcvar=$name
+command="/usr/sbin/${name}"
+required_files="/usr/libexec/akture-greeter"
+
+load_rc_config $name
+run_rc_command "$1"

@@ -1,0 +1,131 @@
+.\" Copyright (c) 2026 Serusion
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd November 2, 2026
+.Dt AKTURE.CONF 5
+.Os
+.Sh NAME
+.Nm akture.conf
+.Nd configuration of the akture display manager
+.Sh DESCRIPTION
+.Nm
+is read by
+.Xr akture 8
+at startup.
+Each line has the form
+.Dl key = value
+Blank lines are ignored.
+Only lines whose first non-blank character is
+.Ql #
+are comments; a
+.Ql #
+later in a line belongs to the value, as in colours.
+Unknown keys and invalid values are logged and the default is used.
+.Pp
+The keys are:
+.Bl -tag -width Ds
+.It Cm background Pq none
+Name of the background.
+For an output of W by H pixels the file
+.Pa /usr/share/akture/backgrounds/ Ns Ar name Ns - Ns Ar W Ns x Ns Ar H Ns .akbg
+is used, see
+.Xr akture-conv 1 .
+Outputs without a matching file use
+.Cm background_color ,
+and their resolution is added to
+.Pa /var/db/akture/resolutions .
+.It Cm background_color Pq #1E1410
+Colour of outputs without a background picture.
+.It Cm accent Pq #C8441B
+Colour of the submit button and the logo mark.
+.It Cm text_color Pq #F5EFE4
+Colour of the text.
+.It Cm font_ui Pq Pa /usr/share/akture/fonts/Outfit.ttf
+Font file for the interface.
+Variable fonts with a weight axis are used at several weights.
+.It Cm font_clock Pq Pa /usr/share/akture/fonts/ZenKakuGothicNew-Light.ttf
+Font file for the clock and the date; also used for characters
+.Cm font_ui
+lacks, such as Japanese.
+.It Cm clock_format Pq %H:%M
+.Xr strftime 3
+format of the clock.
+.It Cm show_logo Pq yes
+Whether to show the logo in the lower right corner.
+.It Cm logo Pq the system name
+Text of the logo.
+Text between
+.Ql **
+is bold, e.g.\&
+.Ql **Autumn**BSD .
+.It Cm scale Pq 1
+Scale factor of the interface: 1, 1.25, 1.5 or 2.
+.It Cm keyboard_layouts Pq none
+Comma separated xkb layouts to switch between, e.g.\&
+.Ql jp,us .
+Without it the layouts of the X server are used.
+.It Cm default_session Pq the first
+File name or name of the session selected at first.
+.It Cm remember_user Pq yes
+Whether to preselect the user who logged in last.
+.It Cm allow_power Pq yes
+Whether shutting down and rebooting from the login screen is allowed.
+.It Cm autologin_user Pq none
+User logged in at boot without authentication, through the PAM
+service
+.Dq akture-autologin .
+.It Cm x_server Pq Pa /usr/X11R7/bin/X
+Path of the X server.
+.It Cm x_args Pq -nolisten tcp
+Further arguments of the X server, split at blanks.
+.It Cm prefer_xsession Pq no
+Run
+.Pa ~/.xsession
+instead of the selected session if the user has one.
+.El
+.Ss Session files
+Each file in
+.Pa /etc/akture/sessions
+describes one session in the same syntax:
+.Bl -tag -width Ds
+.It Cm name
+The name shown on the login screen.
+.It Cm exec
+Absolute path of the command and its arguments, split at blanks and
+run without a shell.
+.El
+.Sh FILES
+.Bl -tag -width "/etc/akture/akture.conf" -compact
+.It Pa /etc/akture/akture.conf
+.It Pa /etc/akture/sessions/
+.El
+.Sh EXAMPLES
+.Bd -literal -offset indent
+background = autumn
+keyboard_layouts = jp,us
+logo = **Autumn**BSD
+.Ed
+.Sh SEE ALSO
+.Xr akture-conv 1 ,
+.Xr akture 8

@@ -1,0 +1,26 @@
+DESIGN_IMG.png
+SPECIFICATION.md
+
+# build outputs
+*.o
+*.cat[158]
+.depend
+obj/
+/akture/*.d
+/akture-greeter/*.d
+/akture-conv/*.d
+/tests/*.d
+/akture/akture
+/akture-greeter/akture-greeter
+/akture-conv/akture-conv
+/tests/t_akbg
+/tests/t_akmsg
+/tests/t_conf
+/tests/t_exif
+/tests/t_state
+/tests/t_xauth
+/tests/fuzz/fuzz_akbg
+/tests/fuzz/fuzz_akmsg
+/tests/fuzz/fuzz_conf
+/tests/fuzz/fuzz_exif
+/verify/.frama-c/
