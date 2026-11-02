@@ -1,42 +1,24 @@
 #!/bin/sh
 #
-# akture(8) hook shipped by AutumnBSD: let aprefetch read ahead while
-# the password is being typed.  Akture itself knows nothing about
-# aprefetch; this hook is the whole integration.
+# akture(8) hook shipped by AutumnBSD.  Akture itself knows nothing
+# about aprefetch(4); this hook is the whole integration.
 #
-#	greeter-shown <last user>
-#		start prefetching the profile of the last user
-#	auth-ok <user> <session>
-#		switch profiles if somebody else logged in
 #	session-started <user> <session>
-#		close the boot recording window
+#		close the boot recording window, as login(1) does through
+#		pam_exec(8)
 #
-# XXX The aprefctl(8) subcommands and profile names follow the
-# aprefetch design; adjust them together with it.
+# XXX Prefetching the session while the password is typed, on
+# greeter-shown and auth-ok, needs a profile per session.  aprefetch
+# only has the boot profile and per-application profiles, and the
+# latter are not implemented yet; once they are, replay the profile of
+# the session here with "aprefctl replay".
 #
 
 APREFCTL=/usr/sbin/aprefctl
-STATE=/var/run/akture/aprefetch-user
-
-profile()
-{
-	echo "akture-$1"
-}
 
 [ -x "$APREFCTL" ] || exit 0
 
 case "$1" in
-greeter-shown)
-	[ -n "$2" ] || exit 0
-	echo "$2" > "$STATE"
-	exec "$APREFCTL" start "$(profile "$2")"
-	;;
-auth-ok)
-	if [ "$2" != "$(cat "$STATE" 2>/dev/null)" ]; then
-		echo "$2" > "$STATE"
-		exec "$APREFCTL" switch "$(profile "$2")"
-	fi
-	;;
 session-started)
 	exec "$APREFCTL" boot-done
 	;;
