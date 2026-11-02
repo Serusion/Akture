@@ -1,72 +1,109 @@
 # Akture
 
-依存を最小限に絞った X11 向けディスプレイマネージャ。仕様は
-`SPECIFICATION.md`、画面の基準は案D（`DESIGN_IMG.png`）。
+Akture is a lightweight X11 display manager for [AutumnBSD](https://github.com/Serusion/AutumnBSD) and NetBSD. It aims to show the login screen quickly on old hardware, with few dependencies, and keeps the part that runs as root small enough to be verified with Frama-C.
 
-## 構成
+## Status
 
-| ディレクトリ | 内容 |
-| --- | --- |
-| `akture/` | マスター `akture(8)`。root で動き、X サーバー、PAM 認証、セッション、フック、電源操作を受け持つ |
-| `akture-greeter/` | グリーター `akture-greeter(8)`。`_akture` で動き、描画とキー入力を受け持つ |
-| `akture-conv/` | PNG/JPEG を `.akbg` に変換する `akture-conv(1)` |
-| `common/` | 両者が共有する通信メッセージ、`.akbg` の検査、設定値の解析 |
-| `etc/` | `akture.conf`、PAM 設定、セッション定義、rc.d スクリプト |
-| `autumnbsd/` | AutumnBSD が同梱するフック（`50-aprefetch`） |
-| `tests/` | atf-c の単体テストと libFuzzer のハーネス |
-| `verify/` | Frama-C（WP、Eva）の設定と ACSL スタブ |
-| `spec/` | マスター・グリーター・セッション間のやり取りの TLA+ 仕様 |
+Early development. The first implementation is complete and its tests, fuzzers and formal verification pass, but it has not yet been run on a real NetBSD system. Do not use it as your only way to log in yet.
 
-OS の差は `akture/md_netbsd.c` と `akture/md_freebsd.c` に閉じ込めている。
+## Features
 
-## ビルドとインストール
+- Privilege separation: a small master runs as root, and everything that handles input from outside runs in an unprivileged greeter
+- Authentication through PAM, including password expiry and other extra prompts
+- Session selection, switching to another user, keyboard layout switching, shutdown and reboot from the login screen
+- Multiple monitors and HiDPI scaling (1, 1.25, 1.5 or 2)
+- Backgrounds in a prepared format (`.akbg`) that needs no decoding at login, and `akture-conv` to make them from PNG or JPEG
+- Hooks run at login events, e.g. for AutumnBSD's aprefetch
+- Optional autologin
+- No CPU use while idle, apart from updating the clock once a minute
 
-BSD make を使う。ライブラリの場所は pkg-config で引く。
+## Requirements
+
+- NetBSD (FreeBSD support is in place but untested)
+- BSD make and pkg-config
+- OpenPAM
+- libxcb with the shm, randr and xkb extensions, pixman, FreeType and libxkbcommon (with libxkbcommon-x11), for the greeter
+- libpng and libjpeg, for `akture-conv`
+- The fonts Outfit and Zen Kaku Gothic New, or any TrueType or OpenType fonts set in `akture.conf` (fonts are not included)
+
+## Building and installing
 
 ```sh
 make
 make install
 ```
 
-グリーター用のユーザーを作っておく（NetBSD の例）。
+This installs `akture` to `/usr/sbin`, `akture-greeter` to `/usr/libexec`, `akture-conv` to `/usr/bin`, the configuration to `/etc/akture`, the PAM services to `/etc/pam.d` and the rc.d script.
+
+The greeter runs as the user `_akture`, which has to exist:
 
 ```sh
 groupadd _akture
 useradd -g _akture -d /var/db/akture -s /sbin/nologin -c "Akture greeter" _akture
 ```
 
-既定の書体は `/usr/share/akture/fonts/` の `Outfit.ttf` と
-`ZenKakuGothicNew-Light.ttf`。別の場所なら `akture.conf` の `font_ui` と
-`font_clock` で指定する。
+Then enable and start it:
 
-背景は解像度ごとに変換して置く。
+```sh
+echo akture=YES >> /etc/rc.conf
+/etc/rc.d/akture start
+```
+
+## Configuration
+
+The settings are in `/etc/akture/akture.conf`; see [akture.conf(5)](akture/akture.conf.5). For example:
+
+```
+background = autumn
+keyboard_layouts = jp,us
+logo = **Autumn**BSD
+```
+
+Each file in `/etc/akture/sessions` adds a session to the menu:
+
+```
+name = Fluxbox
+exec = /usr/pkg/bin/startfluxbox
+```
+
+Backgrounds are made once for each screen resolution and found by name:
 
 ```sh
 akture-conv -s 1366x768 -d 35 -o /usr/share/akture/backgrounds/autumn-1366x768.akbg autumn.jpg
 ```
 
-## 検証
+Programs in `/etc/akture/hooks.d` are run, in name order, at the events `greeter-shown`, `auth-ok`, `session-started` and `session-ended`; see [akture(8)](akture/akture.8).
+
+## Verification
+
+- `verify/`: Frama-C. WP proves the master's message parser free of run-time errors, that no session starts without authentication, the order of the privilege drop and the clearing of secrets. Eva shows the configuration reader and the `.akbg` header check free of run-time errors.
+- `spec/`: a TLA+ model of the master, the greeter and the session, including crashes and a compromised greeter, checked with TLC.
+- `tests/`: atf-c unit tests, and libFuzzer harnesses in `tests/fuzz`.
 
 ```sh
-cd tests && make && kyua test       # 単体テスト（atf-c）
-cd tests/fuzz && make run           # ファジング（clang の libFuzzer）
-cd verify && make                   # Frama-C（WP と Eva をひとつのセッションで）
+cd verify && make
 java -jar tla2tools.jar -config spec/akture.cfg spec/akture.tla
+cd tests/fuzz && make run
 ```
 
-`verify/` は次を示す。未確定・不成立の性質が一つでも残れば失敗する。
+The tool versions used are listed in [verify/VERSIONS](verify/VERSIONS).
 
-| 対象 | 道具 | 示すこと |
-| --- | --- | --- |
-| メッセージの符号化と解析（`akmsg.c`） | WP＋RTE | 何が送られても範囲外アクセスやあふれがない。失敗したら内容を消去する |
-| 状態遷移（`state.c`） | WP | 認証に成功せずにセッション中にならない |
-| 権限を落とす手順（`ak_privdrop`） | WP | setgroups → setgid → setuid の順で、失敗すれば中止する |
-| 秘密の消去（`akmsg_clear`、`ak_explicit_zero`） | WP | 使い終わった領域がすべて 0 になる |
-| .akbg のヘッダ（`akbg_check`） | WP＋Eva | 検査を通ったヘッダは大きさが矛盾しない。実行時エラーがない |
-| 設定ファイル（`conf_load` から）と引数の分割 | Eva（＋WP で補助関数の契約） | 任意の入力で実行時エラーがない |
+## Source layout
 
-`spec/akture.tla` は、グリーターの異常終了や乗っ取り、マスターの異常終了を含めて、
-認証なしにセッションが始まらないこと、認証が必ず終わること、グリーターが必ず
-起動し直されることを TLC で検査する。
+```
+akture/            the master, akture(8)
+akture-greeter/    the login screen, akture-greeter(8)
+akture-conv/       the background converter, akture-conv(1)
+common/            message protocol, .akbg format and parsers
+etc/               configuration, PAM services, sessions, rc.d script
+autumnbsd/         the aprefetch hook shipped by AutumnBSD
+tests/             unit tests and fuzzers
+verify/            Frama-C setup
+spec/              TLA+ model
+```
 
-道具のバージョンは `verify/VERSIONS` に固定している。
+## License
+
+BSD-2-Clause; see [LICENSE](LICENSE).
+
+Bug reports and pull requests are welcome on [GitHub](https://github.com/Serusion/Akture/issues).
