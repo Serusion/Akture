@@ -24,7 +24,7 @@ Early development. The first implementation is complete and its tests, fuzzers a
 - OpenPAM
 - libxcb with the shm, randr and xkb extensions, pixman, FreeType and libxkbcommon (with libxkbcommon-x11), for the greeter
 - libpng and libjpeg, for `akture-conv`
-- The fonts Outfit and Zen Kaku Gothic New, or any TrueType or OpenType fonts set in `akture.conf` (fonts are not included)
+- The fonts Outfit and Zen Kaku Gothic New, or any TrueType or OpenType fonts set in `akture.conf`. They are not included here; on AutumnBSD the pkgsrc package `fonts/autumn-fonts` installs them
 
 ## Building and installing
 

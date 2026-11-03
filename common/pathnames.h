@@ -67,6 +67,14 @@
 #define _PATH_AKTURE_BGDIR	_PATH_AKTURE_SHARE "/backgrounds"
 #define _PATH_AKTURE_FONTDIR	_PATH_AKTURE_SHARE "/fonts"
 
+/* Defaults of font_ui and font_clock in akture.conf(5). */
+#ifndef _PATH_AKTURE_FONT_UI
+#define _PATH_AKTURE_FONT_UI	_PATH_AKTURE_FONTDIR "/Outfit.ttf"
+#endif
+#ifndef _PATH_AKTURE_FONT_CLOCK
+#define _PATH_AKTURE_FONT_CLOCK	_PATH_AKTURE_FONTDIR "/ZenKakuGothicNew-Light.ttf"
+#endif
+
 #ifndef _PATH_AKTURE_SHUTDOWN
 #define _PATH_AKTURE_SHUTDOWN	"/sbin/shutdown"
 #endif

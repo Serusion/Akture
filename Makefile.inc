@@ -3,7 +3,8 @@
 # Where Akture is installed and where it looks for its files.  The
 # defaults are those of the base system; a package overrides them,
 # e.g. make AKTURE_PREFIX=/usr/pkg AKTURE_ETCDIR=/usr/pkg/etc/akture.
-# AKTURE_XSERVER, if set, replaces the default of x_server.
+# AKTURE_XSERVER, AKTURE_FONT_UI and AKTURE_FONT_CLOCK, if set, replace
+# the defaults of x_server, font_ui and font_clock.
 AKTURE_PREFIX?=		/usr
 AKTURE_ETCDIR?=		/etc/akture
 AKTURE_SHAREDIR?=	${AKTURE_PREFIX}/share/akture
@@ -20,6 +21,12 @@ CPPFLAGS+=	-D_PATH_AKTURE_RUN=\"${AKTURE_RUNDIR}\"
 CPPFLAGS+=	-D_PATH_AKTURE_GREETER=\"${AKTURE_PREFIX}/libexec/akture-greeter\"
 .if defined(AKTURE_XSERVER)
 CPPFLAGS+=	-D_PATH_AKTURE_XSERVER=\"${AKTURE_XSERVER}\"
+.endif
+.if defined(AKTURE_FONT_UI)
+CPPFLAGS+=	-D_PATH_AKTURE_FONT_UI=\"${AKTURE_FONT_UI}\"
+.endif
+.if defined(AKTURE_FONT_CLOCK)
+CPPFLAGS+=	-D_PATH_AKTURE_FONT_CLOCK=\"${AKTURE_FONT_CLOCK}\"
 .endif
 .PATH:		${.CURDIR}/../common
 

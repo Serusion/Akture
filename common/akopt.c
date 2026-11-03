@@ -49,10 +49,10 @@ const struct akopt akopt_table[AKOPT_NKEYS] = {
 	    { "text_color",		AKOPT_T_COLOR,	 G, "#F5EFE4" },
 	[AKOPT_FONT_UI] =
 	    { "font_ui",		AKOPT_T_PATH,	 G,
-	      _PATH_AKTURE_FONTDIR "/Outfit.ttf" },
+	      _PATH_AKTURE_FONT_UI },
 	[AKOPT_FONT_CLOCK] =
 	    { "font_clock",		AKOPT_T_PATH,	 G,
-	      _PATH_AKTURE_FONTDIR "/ZenKakuGothicNew-Light.ttf" },
+	      _PATH_AKTURE_FONT_CLOCK },
 	[AKOPT_CLOCK_FORMAT] =
 	    { "clock_format",		AKOPT_T_STRING,	 G, "%H:%M" },
 	[AKOPT_SHOW_LOGO] =
