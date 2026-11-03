@@ -1,20 +1,20 @@
 SUBDIR=		pam.d rc.d sessions
 
 FILES=		akture.conf
-FILESDIR=	/etc/akture
+FILESDIR=	${AKTURE_ETCDIR}
 FILESMODE=	644
 
-# Directories the programs expect.  /var/db/akture/resolutions is
-# written by the greeter, everything else only by root.
+# Directories the programs expect.  The resolutions file is written by
+# the greeter, everything else only by root.
 afterinstall:
-	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}/etc/akture/hooks.d
-	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}/var/db/akture
+	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}${AKTURE_ETCDIR}/hooks.d
+	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}${AKTURE_DBDIR}
 	${INSTALL} -d -o root -g wheel -m 755 \
-	    ${DESTDIR}/usr/share/akture/backgrounds
-	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}/usr/share/akture/fonts
-	test -f ${DESTDIR}/var/db/akture/resolutions || \
+	    ${DESTDIR}${AKTURE_SHAREDIR}/backgrounds
+	${INSTALL} -d -o root -g wheel -m 755 ${DESTDIR}${AKTURE_SHAREDIR}/fonts
+	test -f ${DESTDIR}${AKTURE_DBDIR}/resolutions || \
 	    ${INSTALL} -o _akture -g wheel -m 644 /dev/null \
-	    ${DESTDIR}/var/db/akture/resolutions
+	    ${DESTDIR}${AKTURE_DBDIR}/resolutions
 
 .include <bsd.files.mk>
 .include <bsd.subdir.mk>

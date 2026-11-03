@@ -1,5 +1,5 @@
 FILES=		fluxbox
-FILESDIR=	/etc/akture/sessions
+FILESDIR=	${AKTURE_ETCDIR}/sessions
 FILESMODE=	644
 
 .include <bsd.files.mk>

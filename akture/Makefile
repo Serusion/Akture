@@ -3,7 +3,7 @@ SRCS=	main.c auth.c conf.c dirscan.c event.c greeter.c hook.c \
 	lastuser.c power.c session.c state.c xauth.c xserver.c
 SRCS+=	akmsg.c akopt.c akparse.c akutil.c
 MAN=	akture.8 akture.conf.5
-BINDIR=	/usr/sbin
+BINDIR=	${AKTURE_PREFIX}/sbin
 
 # Machine dependent parts.
 OPSYS!=	uname -s

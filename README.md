@@ -35,6 +35,14 @@ make install
 
 This installs `akture` to `/usr/sbin`, `akture-greeter` to `/usr/libexec`, `akture-conv` to `/usr/bin`, the configuration to `/etc/akture`, the PAM services to `/etc/pam.d` and the rc.d script.
 
+These are the paths of the base system. To install under another prefix, as the pkgsrc package does, set the `AKTURE_` variables of [Makefile.inc](Makefile.inc), for example:
+
+```sh
+make AKTURE_PREFIX=/usr/pkg AKTURE_ETCDIR=/usr/pkg/etc/akture
+```
+
+AutumnBSD has a pkgsrc package for Akture in `pkgsrc/x11/akture`.
+
 The greeter runs as the user `_akture`, which has to exist:
 
 ```sh

@@ -2,7 +2,7 @@ PROG=	akture-conv
 SRCS=	conv.c exif.c image.c jpeg.c png.c
 SRCS+=	akbg.c akparse.c akutil.c
 MAN=	akture-conv.1
-BINDIR=	/usr/bin
+BINDIR=	${AKTURE_PREFIX}/bin
 
 PKGS=	libpng libjpeg
 LDADD+=	-lm

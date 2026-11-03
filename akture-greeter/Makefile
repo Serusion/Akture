@@ -2,7 +2,7 @@ PROG=	akture-greeter
 SRCS=	main.c bg.c draw.c font.c ipc.c kbd.c ui.c x11.c
 SRCS+=	akbg.c akmsg.c akopt.c akparse.c akutil.c
 MAN=	akture-greeter.8
-BINDIR=	/usr/libexec
+BINDIR=	${AKTURE_PREFIX}/libexec
 
 PKGS=	xcb xcb-shm xcb-randr xcb-xkb pixman-1 freetype2 \
 	xkbcommon xkbcommon-x11
