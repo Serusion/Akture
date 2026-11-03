@@ -1,26 +1,69 @@
 #!/bin/sh
 #
-# akture(8) hook shipped by AutumnBSD.  Akture itself knows nothing
-# about aprefetch(4); this hook is the whole integration.
+# akture(8) hook shipped by AutumnBSD: prefetch the session while the
+# password is typed, and record it for the next login.  Akture itself
+# knows nothing about aprefetch(4); this hook is the whole integration.
 #
+#	greeter-shown <last user>
+#		close the boot recording window, and replay the profile of
+#		the last session of the last user
+#	auth-ok <user> <session>
+#		record the session with aprefd -s; unless its profile is the
+#		one replayed already, cancel the replay and replay it
 #	session-started <user> <session>
-#		close the boot recording window, as login(1) does through
-#		pam_exec(8)
+#		add a mark, to time the login with aprefctl marks
 #
-# XXX Prefetching the session while the password is typed, on
-# greeter-shown and auth-ok, needs a profile per session.  aprefetch
-# only has the boot profile and per-application profiles, and the
-# latter are not implemented yet; once they are, replay the profile of
-# the session here with "aprefctl replay".
+# A replay may have to wait for the boot replay to end.  It waits in the
+# background, so as not to hold up the hooks after this one, and gives
+# up when a later replay or a replay-stop comes first.
 #
 
 APREFCTL=/usr/sbin/aprefctl
+APREFD=/usr/sbin/aprefd
+SESSIONS=/var/db/aprefetch/session	# see aprefd(8)
+REPLAYED=/var/run/akture-aprefetch	# replayed on greeter-shown
+BUDGET=128m
+WAIT=30
 
-[ -x "$APREFCTL" ] || exit 0
+[ -x "$APREFCTL" ] && [ -c /dev/aprefetch ] || exit 0
+
+replay()
+{
+	"$APREFCTL" replay -w $WAIT -b $BUDGET "$1" \
+	    </dev/null >/dev/null 2>&1 &
+}
 
 case "$1" in
+greeter-shown)
+	"$APREFCTL" boot-done
+	rm -f "$REPLAYED"
+	uid=$(id -u -- "$2" 2>/dev/null) || exit 0
+	# The last session of the user is the one profiled last.
+	prof=$(ls -t "$SESSIONS/$uid"-*.prof 2>/dev/null | head -n 1)
+	[ -n "$prof" ] || exit 0
+	echo "$prof" >"$REPLAYED"
+	replay "$prof"
+	;;
+auth-ok)
+	# Without a greeter, as on autologin, the boot window is still open.
+	"$APREFCTL" boot-done
+	"$APREFCTL" mark "akture: auth-ok"
+	uid=$(id -u -- "$2" 2>/dev/null) || exit 0
+	case "$3" in
+	""|.*|*/*)
+		exit 0
+		;;
+	esac
+	[ -x "$APREFD" ] && "$APREFD" -s "$uid" "$3"
+	prof=$SESSIONS/$uid-$3.prof
+	if [ "$(cat "$REPLAYED" 2>/dev/null)" != "$prof" ]; then
+		"$APREFCTL" replay-stop
+		[ -f "$prof" ] && replay "$prof"
+	fi
+	rm -f "$REPLAYED"
+	;;
 session-started)
-	exec "$APREFCTL" boot-done
+	"$APREFCTL" mark "akture: session-started"
 	;;
 esac
 exit 0
