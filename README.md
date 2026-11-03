@@ -24,7 +24,7 @@ Early development. The first implementation is complete and its tests, fuzzers a
 - OpenPAM
 - libxcb with the shm, randr and xkb extensions, pixman, FreeType and libxkbcommon (with libxkbcommon-x11), for the greeter
 - libpng and libjpeg, for `akture-conv`
-- The fonts Outfit and Zen Kaku Gothic New, or any TrueType or OpenType fonts set in `akture.conf`. They are not included here; on AutumnBSD the pkgsrc package `fonts/autumn-fonts` installs them
+- The fonts Outfit and Zen Kaku Gothic New, or any TrueType or OpenType fonts set in `akture.conf`. They are not included here; the package `autumn-fonts` of [Serusion/autumn-pkgsrc](https://github.com/Serusion/autumn-pkgsrc) installs them
 
 ## Building and installing
 
@@ -41,7 +41,7 @@ These are the paths of the base system. To install under another prefix, as the 
 make AKTURE_PREFIX=/usr/pkg AKTURE_ETCDIR=/usr/pkg/etc/akture
 ```
 
-AutumnBSD has a pkgsrc package for Akture in `pkgsrc/x11/akture`.
+The pkgsrc package of Akture for AutumnBSD is in [Serusion/autumn-pkgsrc](https://github.com/Serusion/autumn-pkgsrc).
 
 The greeter runs as the user `_akture`, which has to exist:
 
