@@ -246,9 +246,13 @@ ui_clock(struct greeter *g)
 	now = time(NULL);
 	if (localtime_r(&now, &tm) == NULL)
 		return 0;
+	/* The format is clock_format of akture.conf(5), checked there. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 	if (strftime(clk, sizeof(clk), g->g_opt[AKOPT_CLOCK_FORMAT], &tm) ==
 	    0)
 		clk[0] = '\0';
+#pragma GCC diagnostic pop
 	(void)snprintf(date, sizeof(date), MSG_DATE_FMT, tm.tm_mon + 1,
 	    tm.tm_mday, ui_weekdays[tm.tm_wday % 7]);
 	if (strcmp(clk, u->u_clock) == 0 && strcmp(date, u->u_date) == 0)

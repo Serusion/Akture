@@ -67,8 +67,12 @@ session_read(const char *file, struct session *s)
 	char key[AKPARSE_LINEMAX], val[AKPARSE_LINEMAX];
 	FILE *fp;
 
-	(void)snprintf(path, sizeof(path), "%s/%s", _PATH_AKTURE_SESSIONS,
-	    file);
+	if ((size_t)snprintf(path, sizeof(path), "%s/%s",
+	    _PATH_AKTURE_SESSIONS, file) >= sizeof(path)) {
+		syslog(LOG_WARNING, "%s/%s: name too long",
+		    _PATH_AKTURE_SESSIONS, file);
+		return -1;
+	}
 	if ((fp = fopen(path, "re")) == NULL) {
 		syslog(LOG_WARNING, "%s: %m", path);
 		return -1;
@@ -143,6 +147,18 @@ session_lookup(const struct akture *a, const char *name)
 	return -1;
 }
 
+/*
+ * Copy s into a fixed-size utmpx field, which is NUL padded but need
+ * not be NUL terminated.
+ */
+static void
+session_utfield(char *field, size_t size, const char *s)
+{
+
+	(void)memset(field, 0, size);
+	(void)memcpy(field, s, strnlen(s, size));
+}
+
 static void
 session_utmpx(const char *user, pid_t pid, short type)
 {
@@ -151,10 +167,10 @@ session_utmpx(const char *user, pid_t pid, short type)
 	(void)memset(&ut, 0, sizeof(ut));
 	ut.ut_type = type;
 	ut.ut_pid = pid;
-	(void)strncpy(ut.ut_user, user, sizeof(ut.ut_user));
-	(void)strncpy(ut.ut_id, "ak" AKTURE_DISPLAYNUM, sizeof(ut.ut_id));
-	(void)strncpy(ut.ut_line, AKTURE_DISPLAY, sizeof(ut.ut_line));
-	(void)strncpy(ut.ut_host, AKTURE_DISPLAY, sizeof(ut.ut_host));
+	session_utfield(ut.ut_user, sizeof(ut.ut_user), user);
+	session_utfield(ut.ut_id, sizeof(ut.ut_id), "ak" AKTURE_DISPLAYNUM);
+	session_utfield(ut.ut_line, sizeof(ut.ut_line), AKTURE_DISPLAY);
+	session_utfield(ut.ut_host, sizeof(ut.ut_host), AKTURE_DISPLAY);
 	(void)gettimeofday(&ut.ut_tv, NULL);
 
 	setutxent();
@@ -205,8 +221,11 @@ session_argv(const struct akture *a, const struct session *s,
 {
 	char xsession[PATH_MAX];
 
-	(void)snprintf(xsession, sizeof(xsession), "%s/%s", home,
-	    SESSION_XSESSION);
+	if ((size_t)snprintf(xsession, sizeof(xsession), "%s/%s", home,
+	    SESSION_XSESSION) >= sizeof(xsession)) {
+		syslog(LOG_ERR, "%s: home directory name too long", home);
+		return -1;
+	}
 	if (s->s_exec[0] == '\0' ||
 	    (conf_bool(a, AKOPT_PREFER_XSESSION) &&
 	    access(xsession, R_OK) == 0)) {

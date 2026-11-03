@@ -140,8 +140,11 @@ hook_run(struct akture *a, const char *event, const char *arg1,
 		_exit(0);
 
 	for (i = 0; i < n; i++) {
-		(void)snprintf(path, sizeof(path), "%s/%s", _PATH_AKTURE_HOOKS,
-		    names[i]);
+		if ((size_t)snprintf(path, sizeof(path), "%s/%s",
+		    _PATH_AKTURE_HOOKS, names[i]) >= sizeof(path)) {
+			syslog(LOG_WARNING, "hook %s: name too long", names[i]);
+			continue;
+		}
 		if (!hook_safe(path, 0)) {
 			syslog(LOG_WARNING, "hook %s: not a root owned, "
 			    "executable file writable only by root", path);
