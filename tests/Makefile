@@ -26,9 +26,9 @@ LDADD.t_akbg+=	-L${LIBAUTUNI} -lautuni
 DPADD.t_akbg+=	${LIBAUTUNI}/libautuni.a
 
 # t_render draws with the code of akture-greeter, whose headers need
-# those of xcb and xkbcommon too; only pixman and FreeType are linked.
+# those of xcb and xkbcommon too.  The frame of libautuni needs xcb.
 RENDER_CFLAGS!=	pkg-config --cflags pixman-1 freetype2 xcb xkbcommon
-RENDER_LIBS!=	pkg-config --libs pixman-1 freetype2
+RENDER_LIBS!=	pkg-config --libs pixman-1 freetype2 xcb xcb-shm
 CPPFLAGS+=	${RENDER_CFLAGS}
 LDADD.t_render+=	-L${LIBAUTUNI} -lautuni ${RENDER_LIBS} -lm
 DPADD.t_render+=	${LIBAUTUNI}/libautuni.a

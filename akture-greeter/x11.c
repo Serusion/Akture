@@ -25,8 +25,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +40,8 @@
  * The X side of the greeter: one override-redirect window over the
  * whole screen, a frame buffer in shared memory and the outputs from
  * RandR.  Only MIT-SHM PutImage is used to draw; no core drawing
- * requests and no Render.
+ * requests and no Render.  The frame buffer is an au_frame of
+ * libautuni.
  */
 
 #define XC_LEFT_PTR		68	/* from <X11/cursorfont.h> */
@@ -99,51 +98,6 @@ x11_check_visual(struct greeter *g)
 bad:
 	syslog(LOG_ERR, "need a 24-bit TrueColor visual in 32-bit pixels");
 	return -1;
-}
-
-/*
- * (Re)allocate the shared frame buffer for the current screen size.
- */
-static int
-x11_alloc(struct greeter *g)
-{
-	struct x11 *x = &g->g_x;
-	xcb_generic_error_t *err;
-	size_t size;
-	int id;
-
-	if (x->x_frame != NULL) {
-		pixman_image_unref(x->x_frame);
-		xcb_shm_detach(x->x_conn, x->x_shmseg);
-		(void)shmdt(x->x_shmaddr);
-		x->x_frame = NULL;
-	}
-
-	size = (size_t)x->x_width * (size_t)x->x_height * 4;
-	if ((id = shmget(IPC_PRIVATE, size, IPC_CREAT | 0600)) == -1) {
-		syslog(LOG_ERR, "shmget: %m");
-		return -1;
-	}
-	x->x_shmaddr = shmat(id, NULL, 0);
-	if (x->x_shmaddr == (void *)-1) {
-		syslog(LOG_ERR, "shmat: %m");
-		(void)shmctl(id, IPC_RMID, NULL);
-		return -1;
-	}
-	x->x_shmseg = xcb_generate_id(x->x_conn);
-	err = xcb_request_check(x->x_conn, xcb_shm_attach_checked(x->x_conn,
-	    x->x_shmseg, (uint32_t)id, 0));
-	/* Both sides are attached (or failed); nobody else may attach. */
-	(void)shmctl(id, IPC_RMID, NULL);
-	if (err != NULL) {
-		free(err);
-		syslog(LOG_ERR, "MIT-SHM attach failed");
-		(void)shmdt(x->x_shmaddr);
-		return -1;
-	}
-	x->x_frame = pixman_image_create_bits(PIXMAN_x8r8g8b8, x->x_width,
-	    x->x_height, x->x_shmaddr, x->x_width * 4);
-	return x->x_frame != NULL ? 0 : -1;
 }
 
 static void
@@ -319,8 +273,8 @@ x11_init(struct greeter *g)
 		xcb_randr_select_input(x->x_conn, x->x_screen->root,
 		    XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
 
-	pixman_region32_init(&x->x_damage);
-	if (x11_alloc(g) == -1)
+	au_frame_init(&x->x_frame, x->x_conn);
+	if (au_frame_alloc(&x->x_frame, x->x_width, x->x_height) == -1)
 		return -1;
 	x11_outputs(g);
 
@@ -346,7 +300,7 @@ x11_reconfigure(struct greeter *g, int w, int h)
 	values[1] = (uint32_t)h;
 	xcb_configure_window(x->x_conn, x->x_win,
 	    XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
-	if (x11_alloc(g) == -1)
+	if (au_frame_alloc(&x->x_frame, w, h) == -1)
 		exit(AKTURE_EXIT_ERROR);
 	x11_outputs(g);
 	ui_layout(g);
@@ -409,38 +363,16 @@ void
 x11_damage(struct greeter *g, const struct au_rect *r)
 {
 
-	if (r->r_w <= 0 || r->r_h <= 0)
-		return;
-	pixman_region32_union_rect(&g->g_x.x_damage, &g->g_x.x_damage,
-	    r->r_x, r->r_y, (unsigned int)r->r_w, (unsigned int)r->r_h);
+	au_frame_damage(&g->g_x.x_frame, r);
 }
 
-/*
- * Send the damaged parts of the frame to the server and wait until it
- * has taken them, so that the next paint cannot race with the copy.
- */
+/* Send what was drawn to the window. */
 void
 x11_present(struct greeter *g)
 {
 	struct x11 *x = &g->g_x;
-	pixman_box32_t *b;
-	int i, n;
 
-	pixman_region32_intersect_rect(&x->x_damage, &x->x_damage, 0, 0,
-	    (unsigned int)x->x_width, (unsigned int)x->x_height);
-	b = pixman_region32_rectangles(&x->x_damage, &n);
-	for (i = 0; i < n; i++) {
-		xcb_shm_put_image(x->x_conn, x->x_win, x->x_gc,
-		    (uint16_t)x->x_width, (uint16_t)x->x_height,
-		    (uint16_t)b[i].x1, (uint16_t)b[i].y1,
-		    (uint16_t)(b[i].x2 - b[i].x1),
-		    (uint16_t)(b[i].y2 - b[i].y1),
-		    (int16_t)b[i].x1, (int16_t)b[i].y1, 24,
-		    XCB_IMAGE_FORMAT_Z_PIXMAP, 0, x->x_shmseg, 0);
-	}
-	free(xcb_get_input_focus_reply(x->x_conn,
-	    xcb_get_input_focus(x->x_conn), NULL));
-	pixman_region32_clear(&x->x_damage);
+	au_frame_present(&x->x_frame, x->x_win, x->x_gc);
 }
 
 const struct output *

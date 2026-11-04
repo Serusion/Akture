@@ -55,15 +55,12 @@ struct x11 {
 	xcb_screen_t	*x_screen;
 	xcb_window_t	 x_win;
 	xcb_gcontext_t	 x_gc;
-	uint32_t	 x_shmseg;
-	void		*x_shmaddr;
-	pixman_image_t	*x_frame;	/* the whole screen, in shm */
+	struct au_frame	 x_frame;	/* the whole screen */
 	int		 x_width, x_height;
 	uint8_t		 x_randr_base;	/* 0: no RandR */
 	struct output	 x_outputs[G_MAXOUTPUTS];
 	int		 x_noutputs;
 	int		 x_primary;
-	pixman_region32_t x_damage;
 };
 
 #define KBD_MAXLAYOUTS	4

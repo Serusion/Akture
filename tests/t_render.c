@@ -44,7 +44,8 @@
  * written as PPM and its SHA-256 compared with the one the base commit
  * drew.  The X, keyboard and IPC parts of the greeter are replaced
  * below: ui_paint() ends with x11_present(), which sends the frame
- * through MIT-SHM.
+ * through MIT-SHM.  The frame is an au_frame without a connection,
+ * around an image in memory.
  *
  * The fonts are not in the repository.  AKTURE_TEST_FONT_UI and
  * AKTURE_TEST_FONT_CLOCK name them, and without them the test is
@@ -70,10 +71,7 @@ void
 x11_damage(struct greeter *g, const struct au_rect *r)
 {
 
-	if (r->r_w <= 0 || r->r_h <= 0)
-		return;
-	pixman_region32_union_rect(&g->g_x.x_damage, &g->g_x.x_damage,
-	    r->r_x, r->r_y, (unsigned int)r->r_w, (unsigned int)r->r_h);
+	au_frame_damage(&g->g_x.x_frame, r);
 }
 
 /* Nothing to send to: the damage is taken, as by the server. */
@@ -82,7 +80,7 @@ x11_present(struct greeter *g)
 {
 
 	npresent++;
-	pixman_region32_clear(&g->g_x.x_damage);
+	pixman_region32_clear(&g->g_x.x_frame.fr_damage);
 }
 
 const struct output *
@@ -166,14 +164,16 @@ render_setup(struct greeter *g)
 	/* One output over the whole frame, without a background image. */
 	x->x_width = T_WIDTH;
 	x->x_height = T_HEIGHT;
-	x->x_frame = pixman_image_create_bits(PIXMAN_x8r8g8b8, T_WIDTH,
+	au_frame_init(&x->x_frame, NULL);
+	x->x_frame.fr_img = pixman_image_create_bits(PIXMAN_x8r8g8b8, T_WIDTH,
 	    T_HEIGHT, NULL, T_WIDTH * 4);
-	ATF_REQUIRE(x->x_frame != NULL);
+	ATF_REQUIRE(x->x_frame.fr_img != NULL);
+	x->x_frame.fr_width = T_WIDTH;
+	x->x_frame.fr_height = T_HEIGHT;
 	x->x_outputs[0].o_rect.r_w = T_WIDTH;
 	x->x_outputs[0].o_rect.r_h = T_HEIGHT;
 	x->x_noutputs = 1;
 	x->x_primary = 0;
-	pixman_region32_init(&x->x_damage);
 
 	(void)strlcpy(u->u_user, g->g_lastuser, sizeof(u->u_user));
 	u->u_mode = UI_MODE_PASSWORD;
@@ -227,8 +227,8 @@ render_check(struct greeter *g, const char *path, const char *want)
 	ui_damage_all(g);
 	ui_paint(g);
 	ATF_REQUIRE_EQ(npresent, 1);
-	ATF_REQUIRE(!pixman_region32_not_empty(&g->g_x.x_damage));
-	write_ppm(g->g_x.x_frame, path);
+	ATF_REQUIRE(!pixman_region32_not_empty(&g->g_x.x_frame.fr_damage));
+	write_ppm(g->g_x.x_frame.fr_img, path);
 	ATF_REQUIRE(SHA256_File(path, got) != NULL);
 	ATF_CHECK_MSG(strcmp(got, want) == 0, "%s: SHA-256 %s, expected %s",
 	    path, got, want);

@@ -746,11 +746,11 @@ ui_paint(struct greeter *g)
 	const struct output *o;
 	int i;
 
-	if (!pixman_region32_not_empty(&x->x_damage))
+	if (!pixman_region32_not_empty(&x->x_frame.fr_damage))
 		return;
-	c.c_img = x->x_frame;
+	c.c_img = x->x_frame.fr_img;
 	pixman_region32_init(&c.c_clip);
-	pixman_region32_copy(&c.c_clip, &x->x_damage);
+	pixman_region32_copy(&c.c_clip, &x->x_frame.fr_damage);
 	pixman_image_set_clip_region32(c.c_img, &c.c_clip);
 
 	for (i = 0; i < x->x_noutputs; i++) {

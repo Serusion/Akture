@@ -30,6 +30,7 @@
 #include <pixman.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <xcb/xcb.h>
 
 /*
  * libautuni: the drawing code shared by the programs of the AutumnBSD
@@ -62,6 +63,20 @@ struct au_font {
 	struct au_face	*f_fallback;
 	double		 f_size;	/* pixels */
 	int		 f_weight;	/* 100 .. 900 */
+};
+
+/*
+ * frame.c: a frame buffer for a window, in MIT-SHM shared memory.  The
+ * pixels are x8r8g8b8 and go to a drawable of depth 24, so the screen
+ * must have a 24-bit TrueColor visual in 32-bit pixels.
+ */
+struct au_frame {
+	xcb_connection_t *fr_conn;
+	uint32_t	 fr_shmseg;
+	void		*fr_shmaddr;
+	pixman_image_t	*fr_img;	/* NULL until allocated */
+	int		 fr_width, fr_height;
+	pixman_region32_t fr_damage;	/* to be drawn and sent */
 };
 
 /* The colours and the scale of a user interface. */
@@ -98,6 +113,18 @@ void	au_draw_line(struct au_canvas *, double, double, double, double,
 /* Draw a ring open at the top by gap radians each side, as for power. */
 void	au_draw_arc(struct au_canvas *, double, double, double, double, double,
 	    uint32_t);
+
+/* frame.c */
+/* Set up a frame on the connection, without a buffer and undamaged. */
+void	au_frame_init(struct au_frame *, xcb_connection_t *);
+/* (Re)allocate the buffer for w by h pixels; 0, or -1 after logging. */
+int	au_frame_alloc(struct au_frame *, int, int);
+/* Release the buffer, if there is one. */
+void	au_frame_free(struct au_frame *);
+/* Add a rectangle to the damage. */
+void	au_frame_damage(struct au_frame *, const struct au_rect *);
+/* Send the damage to the drawable, wait for the server and clear it. */
+void	au_frame_present(struct au_frame *, xcb_drawable_t, xcb_gcontext_t);
 
 /* font.c */
 /* Start FreeType, before any face is opened; 0, or -1 on failure. */
