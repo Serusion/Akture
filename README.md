@@ -103,8 +103,8 @@ akture/            the master, akture(8)
 akture-greeter/    the login screen, akture-greeter(8)
 akture-conv/       the background converter, akture-conv(1)
 common/            message protocol, options and helpers
-libautuni/         drawing, .akbg format and parsers, shared with other
-                   programs of AutumnBSD (internal, not installed)
+libautuni/         drawing, .akbg format and parsers: a copy of
+                   Serusion/libautuni, built but not installed
 etc/               configuration, PAM services, sessions, rc.d script
 autumnbsd/         the aprefetch hook shipped by AutumnBSD
 tests/             unit tests and fuzzers

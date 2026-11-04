@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include/autuni
+
+Name: libautuni
+Description: Drawing for the programs of the AutumnBSD desktop
+URL: https://github.com/Serusion/libautuni
+Version: @VERSION@
+Requires: pixman-1 freetype2 xcb xcb-shm
+Libs: -L${libdir} -lautuni -lm
+Cflags: -I${includedir}

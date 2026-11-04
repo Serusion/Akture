@@ -1,0 +1,13 @@
+# build outputs
+*.o
+*.a
+*.d
+*.ppm
+.depend
+obj/
+/autuni.pc
+/tests/t_akbg
+/tests/t_akparse
+/tests/t_bgmap
+/tests/t_draw
+/tests/t_frame

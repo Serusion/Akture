@@ -32,6 +32,9 @@ CPPFLAGS+=	-D_PATH_AKTURE_FONT_CLOCK=\"${AKTURE_FONT_CLOCK}\"
 # akture and akture-conv build what they use of libautuni from source.
 .PATH:		${.CURDIR}/../common ${.CURDIR}/../libautuni
 
+# libautuni/ is a copy of Serusion/libautuni: build it, install nothing.
+AUTUNI_INTERNAL=	yes
+
 # Flags of the pkg-config(1) packages listed in PKGS by a program.
 .if defined(PKGS) && !empty(PKGS)
 PKGS_CFLAGS!=	pkg-config --cflags ${PKGS}
