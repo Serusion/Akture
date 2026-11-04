@@ -17,6 +17,8 @@ obj/
 /tests/t_akmsg
 /tests/t_conf
 /tests/t_exif
+/tests/t_render
+/tests/*.ppm
 /tests/t_state
 /tests/t_xauth
 /tests/fuzz/fuzz_akbg
