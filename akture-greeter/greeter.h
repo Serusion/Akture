@@ -142,10 +142,7 @@ struct greeter {
 	uint32_t	 g_rseq;
 
 	char		 g_opt[AKOPT_NKEYS][AKMSG_TEXTMAX + 1];
-	uint32_t	 g_bgcolor;
-	uint32_t	 g_accent;
-	uint32_t	 g_text;
-	double		 g_scale;
+	struct au_theme	 g_theme;
 	int		 g_showlogo;
 
 	char		 g_sessions[AK_MAXSESSIONS][AKMSG_NAMEMAX + 1];

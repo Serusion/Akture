@@ -64,6 +64,14 @@ struct au_font {
 	int		 f_weight;	/* 100 .. 900 */
 };
 
+/* The colours and the scale of a user interface. */
+struct au_theme {
+	uint32_t	 th_bgcolor;	/* background */
+	uint32_t	 th_accent;
+	uint32_t	 th_text;
+	double		 th_scale;	/* factor for all sizes */
+};
+
 /* draw.c */
 /* A solid fill of the colour, as a source image to unref when done. */
 pixman_image_t *au_draw_solid(uint32_t);

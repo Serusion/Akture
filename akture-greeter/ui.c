@@ -118,7 +118,7 @@ static double
 px(const struct greeter *g, double v)
 {
 
-	return v * g->g_scale;
+	return v * g->g_theme.th_scale;
 }
 
 static void
@@ -439,7 +439,7 @@ ui_focus_ring(struct greeter *g, struct au_canvas *c, const struct au_rect *r,
 	}
 	au_draw_rrect_stroke(c, r->r_x - pad, r->r_y - pad / 2,
 	    r->r_w + 2 * pad, r->r_h + pad, radius, px(g, 1.5),
-	    au_draw_alpha(g->g_text, 0xb3));
+	    au_draw_alpha(g->g_theme.th_text, 0xb3));
 }
 
 static void
@@ -453,10 +453,10 @@ ui_draw_clock(struct greeter *g, struct au_canvas *c)
 	x = o->r_x + px(g, L_MARGIN);
 	ui_font(g, &f, 1, L_CLOCK_SIZE, W_THIN);
 	(void)au_font_draw(c, &f, x, o->r_y + px(g, L_CLOCK_BASE),
-	    g->g_ui.u_clock, g->g_text);
+	    g->g_ui.u_clock, g->g_theme.th_text);
 	ui_font(g, &f, 1, L_DATE_SIZE, W_REGULAR);
 	(void)au_font_draw(c, &f, x + px(g, 4), o->r_y + px(g, L_DATE_BASE),
-	    g->g_ui.u_date, au_draw_alpha(g->g_text, 0xeb));
+	    g->g_ui.u_date, au_draw_alpha(g->g_theme.th_text, 0xeb));
 }
 
 /*
@@ -531,14 +531,14 @@ ui_draw_login(struct greeter *g, struct au_canvas *c)
 	if (text != NULL) {
 		ui_font(g, &f, 0, L_PROMPT_SIZE, W_REGULAR);
 		(void)au_font_draw(c, &f, x, fy - px(g, L_PROMPT_DY), text,
-		    g->g_text);
+		    g->g_theme.th_text);
 	}
 
 	/* The user: initial in a ring, and the name. */
 	cx = x + px(g, L_AVATAR_R + 3);
 	cy = fy - px(g, L_AVATAR_DY);
 	au_draw_ring(c, cx, cy, px(g, L_AVATAR_R), px(g, 1.5),
-	    au_draw_alpha(g->g_text, 0xd9));
+	    au_draw_alpha(g->g_theme.th_text, 0xd9));
 	if (u->u_mode == UI_MODE_PASSWORD) {
 		n = 1;
 		while (((unsigned char)u->u_user[n] & 0xc0) == 0x80)
@@ -549,15 +549,15 @@ ui_draw_login(struct greeter *g, struct au_canvas *c)
 			initial[0] = (char)(initial[0] - 'A' + 'a');
 		ui_font(g, &f, 0, L_AVATAR_SIZE, W_MEDIUM);
 		(void)au_font_draw(c, &f, cx - au_font_width(&f, initial) / 2,
-		    cy + ui_vcenter(&f), initial, g->g_text);
+		    cy + ui_vcenter(&f), initial, g->g_theme.th_text);
 		ui_font(g, &f, 0, L_NAME_SIZE, W_SEMIBOLD);
 		(void)au_font_draw(c, &f, x + px(g, L_NAME_DX),
-		    cy + ui_vcenter(&f), u->u_user, g->g_text);
+		    cy + ui_vcenter(&f), u->u_user, g->g_theme.th_text);
 	} else {
 		ui_font(g, &f, 0, L_NAME_SIZE - 3, W_REGULAR);
 		(void)au_font_draw(c, &f, x + px(g, L_NAME_DX),
 		    cy + ui_vcenter(&f), MSG_ENTERUSER,
-		    au_draw_alpha(g->g_text, 0xb3));
+		    au_draw_alpha(g->g_theme.th_text, 0xb3));
 	}
 
 	/* The field and its button. */
@@ -575,7 +575,7 @@ ui_draw_login(struct greeter *g, struct au_canvas *c)
 
 	cx = u->u_rbutton.r_x + u->u_rbutton.r_w / 2.0;
 	cy = u->u_rbutton.r_y + u->u_rbutton.r_h / 2.0;
-	au_draw_circle(c, cx, cy, px(g, L_BUTTON_R), g->g_accent);
+	au_draw_circle(c, cx, cy, px(g, L_BUTTON_R), g->g_theme.th_accent);
 	s = px(g, 1);
 	if (u->u_auth == UI_AUTH_WAIT || u->u_auth == UI_AUTH_CANCEL) {
 		/* Busy: no second submission. */
@@ -595,22 +595,22 @@ ui_draw_login(struct greeter *g, struct au_canvas *c)
 	if ((text = ui_note(g)) != NULL) {
 		ui_font(g, &f, 0, L_NOTE_SIZE, W_REGULAR);
 		(void)au_font_draw(c, &f, x + px(g, L_ROW_DX),
-		    fy + fh + px(g, L_NOTE_DY), text, g->g_text);
+		    fy + fh + px(g, L_NOTE_DY), text, g->g_theme.th_text);
 	}
 
 	/* Session and the other user. */
 	ui_font(g, &f, 0, L_ROW_SIZE, W_REGULAR);
 	base = u->u_rowbase;
 	cx = au_font_draw(c, &f, u->u_rsession.r_x, base,
-	    g->g_sessions[g->g_session], au_draw_alpha(g->g_text, 0xf2)) +
-	    px(g, 8);
+	    g->g_sessions[g->g_session],
+	    au_draw_alpha(g->g_theme.th_text, 0xf2)) + px(g, 8);
 	cy = base - px(g, 4.5);
 	au_draw_line(c, cx - 3.5 * s, cy - 2 * s, cx, cy + 1.5 * s, 1.4 * s,
-	    g->g_text);
+	    g->g_theme.th_text);
 	au_draw_line(c, cx, cy + 1.5 * s, cx + 3.5 * s, cy - 2 * s, 1.4 * s,
-	    g->g_text);
+	    g->g_theme.th_text);
 	(void)au_font_draw(c, &f, u->u_rother.r_x, base, MSG_OTHERUSER,
-	    au_draw_alpha(g->g_text, 0xf2));
+	    au_draw_alpha(g->g_theme.th_text, 0xf2));
 	ui_focus_ring(g, c, &u->u_rsession, UI_FOCUS_SESSION);
 	ui_focus_ring(g, c, &u->u_rother, UI_FOCUS_OTHER);
 }
@@ -630,13 +630,13 @@ ui_draw_top(struct greeter *g, struct au_canvas *c)
 	ui_font(g, &f, 0, L_HOST_SIZE, W_REGULAR);
 	(void)au_font_draw(c, &f, r->r_x - px(g, L_HOST_GAP) -
 	    au_font_width(&f, u->u_host), cy + ui_vcenter(&f), u->u_host,
-	    au_draw_alpha(g->g_text, 0xeb));
+	    au_draw_alpha(g->g_theme.th_text, 0xeb));
 
 	au_draw_rrect_stroke(c, r->r_x, r->r_y, r->r_w, r->r_h, r->r_h / 2.0,
-	    1.2 * s, au_draw_alpha(g->g_text, 0xcc));
+	    1.2 * s, au_draw_alpha(g->g_theme.th_text, 0xcc));
 	ui_font(g, &f, 0, L_PILL_SIZE, W_REGULAR);
 	(void)au_font_draw(c, &f, r->r_x + px(g, L_PILL_PAD),
-	    cy + ui_vcenter(&f), kbd_label(g), g->g_text);
+	    cy + ui_vcenter(&f), kbd_label(g), g->g_theme.th_text);
 	ui_focus_ring(g, c, r, UI_FOCUS_LAYOUT);
 
 	if (ui_power_allowed(g)) {
@@ -644,9 +644,9 @@ ui_draw_top(struct greeter *g, struct au_canvas *c)
 		cx = r->r_x + r->r_w / 2.0;
 		cy = r->r_y + r->r_h / 2.0;
 		au_draw_arc(c, cx, cy + 0.5 * s, px(g, L_POWER_R), 1.6 * s, 0.7,
-		    g->g_text);
+		    g->g_theme.th_text);
 		au_draw_line(c, cx, cy - 8.5 * s, cx, cy - 2 * s, 1.6 * s,
-		    g->g_text);
+		    g->g_theme.th_text);
 		ui_focus_ring(g, c, r, UI_FOCUS_POWER);
 	}
 }
@@ -695,11 +695,12 @@ ui_draw_logo(struct greeter *g, struct au_canvas *c)
 	for (i = 0; i < 4; i++) {
 		a = i * M_PI / 4;
 		au_draw_line(c, cx - r * cos(a), cy - r * sin(a),
-		    cx + r * cos(a), cy + r * sin(a), 1.5 * s, g->g_accent);
+		    cx + r * cos(a), cy + r * sin(a), 1.5 * s,
+		    g->g_theme.th_accent);
 	}
 	for (i = 0; i < n; i++) {
 		ui_font(g, &f, 0, L_LOGO_SIZE, i % 2 ? W_BOLD : W_REGULAR);
-		x = au_font_draw(c, &f, x, base, seg[i], g->g_text);
+		x = au_font_draw(c, &f, x, base, seg[i], g->g_theme.th_text);
 	}
 }
 
@@ -717,19 +718,19 @@ ui_draw_menu(struct greeter *g, struct au_canvas *c)
 	n = ui_menu_items(g, items);
 	/* Nearly opaque: whatever lies below must not show through. */
 	au_draw_rrect(c, r->r_x, r->r_y, r->r_w, r->r_h, px(g, 12),
-	    au_draw_alpha(g->g_bgcolor, 0xf7));
+	    au_draw_alpha(g->g_theme.th_bgcolor, 0xf7));
 	au_draw_rrect_stroke(c, r->r_x, r->r_y, r->r_w, r->r_h, px(g, 12),
-	    px(g, 1), au_draw_alpha(g->g_text, 0x33));
+	    px(g, 1), au_draw_alpha(g->g_theme.th_text, 0x33));
 	ui_font(g, &f, 0, L_MENU_SIZE, W_REGULAR);
 	for (i = 0; i < n; i++) {
 		y = r->r_y + px(g, L_MENU_PAD) + i * u->u_menurow;
 		if (i == u->u_menusel)
 			au_draw_rrect(c, r->r_x + px(g, 4), y,
 			    r->r_w - px(g, 8), u->u_menurow, px(g, 8),
-			    au_draw_alpha(g->g_text, 0x24));
+			    au_draw_alpha(g->g_theme.th_text, 0x24));
 		(void)au_font_draw(c, &f, r->r_x + px(g, L_MENU_INSET),
 		    y + u->u_menurow / 2.0 + ui_vcenter(&f), items[i],
-		    g->g_text);
+		    g->g_theme.th_text);
 	}
 }
 
@@ -758,7 +759,7 @@ ui_paint(struct greeter *g)
 			au_draw_image(&c, o->o_bg, o->o_rect.r_x,
 			    o->o_rect.r_y);
 		else
-			au_draw_fill(&c, &o->o_rect, g->g_bgcolor);
+			au_draw_fill(&c, &o->o_rect, g->g_theme.th_bgcolor);
 	}
 	ui_draw_clock(g, &c);
 	ui_draw_login(g, &c);

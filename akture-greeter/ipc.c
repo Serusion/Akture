@@ -136,12 +136,13 @@ done:
 	g->g_session = (int)m.am_args[2];
 	(void)strlcpy(g->g_lastuser, m.am_str, sizeof(g->g_lastuser));
 
-	(void)ak_parse_color(g->g_opt[AKOPT_BACKGROUND_COLOR], &g->g_bgcolor);
-	(void)ak_parse_color(g->g_opt[AKOPT_ACCENT], &g->g_accent);
-	(void)ak_parse_color(g->g_opt[AKOPT_TEXT_COLOR], &g->g_text);
+	(void)ak_parse_color(g->g_opt[AKOPT_BACKGROUND_COLOR],
+	    &g->g_theme.th_bgcolor);
+	(void)ak_parse_color(g->g_opt[AKOPT_ACCENT], &g->g_theme.th_accent);
+	(void)ak_parse_color(g->g_opt[AKOPT_TEXT_COLOR], &g->g_theme.th_text);
 	pct = 100;
 	(void)ak_parse_scale(g->g_opt[AKOPT_SCALE], &pct);
-	g->g_scale = pct / 100.0;
+	g->g_theme.th_scale = pct / 100.0;
 	b = 1;
 	(void)ak_parse_bool(g->g_opt[AKOPT_SHOW_LOGO], &b);
 	g->g_showlogo = b;

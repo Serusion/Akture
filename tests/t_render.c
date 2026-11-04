@@ -144,12 +144,13 @@ render_setup(struct greeter *g)
 	(void)strlcpy(g->g_opt[AKOPT_LOGO], "**Autumn**BSD",
 	    sizeof(g->g_opt[AKOPT_LOGO]));
 	ATF_REQUIRE_EQ(ak_parse_color(g->g_opt[AKOPT_BACKGROUND_COLOR],
-	    &g->g_bgcolor), 0);
-	ATF_REQUIRE_EQ(ak_parse_color(g->g_opt[AKOPT_ACCENT], &g->g_accent), 0);
-	ATF_REQUIRE_EQ(ak_parse_color(g->g_opt[AKOPT_TEXT_COLOR], &g->g_text),
-	    0);
+	    &g->g_theme.th_bgcolor), 0);
+	ATF_REQUIRE_EQ(ak_parse_color(g->g_opt[AKOPT_ACCENT],
+	    &g->g_theme.th_accent), 0);
+	ATF_REQUIRE_EQ(ak_parse_color(g->g_opt[AKOPT_TEXT_COLOR],
+	    &g->g_theme.th_text), 0);
 	ATF_REQUIRE_EQ(ak_parse_scale(g->g_opt[AKOPT_SCALE], &pct), 0);
-	g->g_scale = pct / 100.0;
+	g->g_theme.th_scale = pct / 100.0;
 	g->g_showlogo = 1;
 	g->g_flags = AKINIT_POWER;
 	(void)strlcpy(g->g_sessions[0], "fluxbox", sizeof(g->g_sessions[0]));
