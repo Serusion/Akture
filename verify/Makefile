@@ -8,10 +8,11 @@ TIMEOUT?=	30
 
 SRCDIR=		${.CURDIR}/..
 FCPP=		-cpp-extra-args="-I${.CURDIR}/stubs -I${SRCDIR}/common \
-		-I${SRCDIR}/akture -include ${.CURDIR}/stubs/akture_spec.h"
+		-I${SRCDIR}/libautuni -I${SRCDIR}/akture \
+		-include ${.CURDIR}/stubs/akture_spec.h"
 SRCS=		${.CURDIR}/eva_main.c \
-		${SRCDIR}/common/akbg.c ${SRCDIR}/common/akmsg.c \
-		${SRCDIR}/common/akopt.c ${SRCDIR}/common/akparse.c \
+		${SRCDIR}/libautuni/akbg.c ${SRCDIR}/common/akmsg.c \
+		${SRCDIR}/common/akopt.c ${SRCDIR}/libautuni/akparse.c \
 		${SRCDIR}/common/akutil.c ${SRCDIR}/akture/conf.c \
 		${SRCDIR}/akture/state.c
 

@@ -36,6 +36,11 @@
  * desktop.  Everything is drawn with pixman into images in memory:
  * shapes with antialiased edges, and text with FreeType.  Colours are
  * 32-bit ARGB, not premultiplied.
+ *
+ * The library also has the .akbg background format, in akbg.h, and the
+ * parsers of the configuration, in akparse.h.  They keep their names
+ * from Akture, whose master builds akparse.c itself and does not link
+ * this library.
  */
 
 struct au_rect {

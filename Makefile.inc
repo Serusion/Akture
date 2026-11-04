@@ -29,7 +29,8 @@ CPPFLAGS+=	-D_PATH_AKTURE_FONT_UI=\"${AKTURE_FONT_UI}\"
 .if defined(AKTURE_FONT_CLOCK)
 CPPFLAGS+=	-D_PATH_AKTURE_FONT_CLOCK=\"${AKTURE_FONT_CLOCK}\"
 .endif
-.PATH:		${.CURDIR}/../common
+# akture and akture-conv build what they use of libautuni from source.
+.PATH:		${.CURDIR}/../common ${.CURDIR}/../libautuni
 
 # Flags of the pkg-config(1) packages listed in PKGS by a program.
 .if defined(PKGS) && !empty(PKGS)

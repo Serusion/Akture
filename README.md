@@ -102,7 +102,9 @@ The tool versions used are listed in [verify/VERSIONS](verify/VERSIONS).
 akture/            the master, akture(8)
 akture-greeter/    the login screen, akture-greeter(8)
 akture-conv/       the background converter, akture-conv(1)
-common/            message protocol, .akbg format and parsers
+common/            message protocol, options and helpers
+libautuni/         drawing, .akbg format and parsers, shared with other
+                   programs of AutumnBSD (internal, not installed)
 etc/               configuration, PAM services, sessions, rc.d script
 autumnbsd/         the aprefetch hook shipped by AutumnBSD
 tests/             unit tests and fuzzers
