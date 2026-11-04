@@ -25,8 +25,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -42,10 +40,11 @@
 
 /*
  * Backgrounds.  For each output the file "name-WxH.akbg" matching its
- * resolution is mapped as it is: the pixels are already in the format
- * of the X server, so nothing is decoded or converted.  Outputs
- * without a usable file get the solid background colour, and their
- * resolution is recorded so that a file can be made for it.
+ * resolution is mapped as it is, by au_bg_map() of libautuni: the
+ * pixels are already in the format of the X server, so nothing is
+ * decoded or converted.  Outputs without a usable file get the solid
+ * background colour, and their resolution is recorded so that a file
+ * can be made for it.
  */
 
 static int
@@ -86,11 +85,7 @@ bg_load(struct greeter *g, struct output *o)
 {
 	const char *name;
 	char path[PATH_MAX];
-	uint8_t hdr[AKBG_HDRLEN];
-	struct akbg_header h;
-	struct stat st;
-	void *map;
-	int fd, error, w, h0;
+	int fd, w, h0;
 
 	bg_free(o);
 	name = g->g_opt[AKOPT_BACKGROUND];
@@ -109,29 +104,7 @@ bg_load(struct greeter *g, struct output *o)
 			syslog(LOG_WARNING, "%s: %m", path);
 		return;
 	}
-	if (fstat(fd, &st) == -1 || !S_ISREG(st.st_mode) ||
-	    pread(fd, hdr, sizeof(hdr), 0) != (ssize_t)sizeof(hdr)) {
-		syslog(LOG_WARNING, "%s: cannot read the header", path);
-		goto out;
-	}
-	if ((error = akbg_check(hdr, (uint64_t)st.st_size, (uint32_t)w,
-	    (uint32_t)h0, &h)) != AKBG_OK) {
-		syslog(LOG_WARNING, "%s: %s", path, akbg_strerror(error));
-		goto out;
-	}
-	map = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (map == MAP_FAILED) {
-		syslog(LOG_WARNING, "%s: mmap: %m", path);
-		goto out;
-	}
-	o->o_map = map;
-	o->o_maplen = (size_t)st.st_size;
-	/* pixman only reads from a source image. */
-	o->o_bg = pixman_image_create_bits(PIXMAN_x8r8g8b8, w, h0,
-	    (uint32_t *)((uint8_t *)map + AKBG_HDRLEN), (int)h.ah_stride);
-	if (o->o_bg == NULL)
-		bg_free(o);
-out:
+	(void)au_bg_map(&o->o_bg, fd, path, w, h0);
 	(void)close(fd);
 }
 
@@ -139,11 +112,5 @@ void
 bg_free(struct output *o)
 {
 
-	if (o->o_bg != NULL)
-		pixman_image_unref(o->o_bg);
-	if (o->o_map != NULL)
-		(void)munmap(o->o_map, o->o_maplen);
-	o->o_bg = NULL;
-	o->o_map = NULL;
-	o->o_maplen = 0;
+	au_bg_unmap(&o->o_bg);
 }

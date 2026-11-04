@@ -45,9 +45,7 @@ struct xkb_state;
 
 struct output {
 	struct au_rect	 o_rect;
-	pixman_image_t	*o_bg;		/* NULL: solid background */
-	void		*o_map;		/* mmap(2)ed .akbg */
-	size_t		 o_maplen;
+	struct au_bg	 o_bg;		/* no image: solid background */
 };
 
 struct x11 {

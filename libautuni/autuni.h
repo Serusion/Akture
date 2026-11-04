@@ -65,6 +65,13 @@ struct au_font {
 	int		 f_weight;	/* 100 .. 900 */
 };
 
+/* bgmap.c: a background image mapped from an .akbg file */
+struct au_bg {
+	pixman_image_t	*bg_img;	/* NULL: none */
+	void		*bg_map;	/* the mmap(2)ed file */
+	size_t		 bg_maplen;
+};
+
 /*
  * frame.c: a frame buffer for a window, in MIT-SHM shared memory.  The
  * pixels are x8r8g8b8 and go to a drawable of depth 24, so the screen
@@ -86,6 +93,12 @@ struct au_theme {
 	uint32_t	 th_text;
 	double		 th_scale;	/* factor for all sizes */
 };
+
+/* bgmap.c */
+/* Map the .akbg file open on fd as a w by h image; 0, or -1 after logging. */
+int	au_bg_map(struct au_bg *, int, const char *, int, int);
+/* Unmap a background, if one is mapped. */
+void	au_bg_unmap(struct au_bg *);
 
 /* draw.c */
 /* A solid fill of the colour, as a source image to unref when done. */

@@ -755,8 +755,8 @@ ui_paint(struct greeter *g)
 
 	for (i = 0; i < x->x_noutputs; i++) {
 		o = &x->x_outputs[i];
-		if (o->o_bg != NULL)
-			au_draw_image(&c, o->o_bg, o->o_rect.r_x,
+		if (o->o_bg.bg_img != NULL)
+			au_draw_image(&c, o->o_bg.bg_img, o->o_rect.r_x,
 			    o->o_rect.r_y);
 		else
 			au_draw_fill(&c, &o->o_rect, g->g_theme.th_bgcolor);
