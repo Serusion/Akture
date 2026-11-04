@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "greeter.h"
+#include "autuni.h"
 
 /*
  * Drawing primitives.  Shapes are rasterised from signed distance
@@ -56,7 +56,7 @@ struct shape {
 };
 
 pixman_image_t *
-draw_solid(uint32_t argb)
+au_draw_solid(uint32_t argb)
 {
 	pixman_color_t c;
 	unsigned int a;
@@ -73,14 +73,14 @@ draw_solid(uint32_t argb)
  * Replace the alpha of a colour.
  */
 uint32_t
-draw_alpha(uint32_t argb, unsigned int alpha)
+au_draw_alpha(uint32_t argb, unsigned int alpha)
 {
 
 	return (argb & 0x00ffffffU) | ((uint32_t)(alpha & 0xff) << 24);
 }
 
 static int
-draw_visible(const struct canvas *c, int x, int y, int w, int h)
+draw_visible(const struct au_canvas *c, int x, int y, int w, int h)
 {
 	pixman_box32_t box;
 
@@ -95,13 +95,13 @@ draw_visible(const struct canvas *c, int x, int y, int w, int h)
 }
 
 void
-draw_fill(struct canvas *c, const struct rect *r, uint32_t argb)
+au_draw_fill(struct au_canvas *c, const struct au_rect *r, uint32_t argb)
 {
 	pixman_image_t *src;
 
 	if (!draw_visible(c, r->r_x, r->r_y, r->r_w, r->r_h))
 		return;
-	src = draw_solid(argb);
+	src = au_draw_solid(argb);
 	pixman_image_composite32((argb >> 24) == 0xff ? PIXMAN_OP_SRC :
 	    PIXMAN_OP_OVER, src, NULL, c->c_img, 0, 0, 0, 0,
 	    r->r_x, r->r_y, r->r_w, r->r_h);
@@ -112,7 +112,7 @@ draw_fill(struct canvas *c, const struct rect *r, uint32_t argb)
  * Copy an opaque image, e.g. a background, to (x, y).
  */
 void
-draw_image(struct canvas *c, pixman_image_t *img, int x, int y)
+au_draw_image(struct au_canvas *c, pixman_image_t *img, int x, int y)
 {
 	int w, h;
 
@@ -190,7 +190,7 @@ sdf(const struct shape *s, double px, double py)
  * Rasterise a shape whose ink lies within the given box.
  */
 static void
-draw_shape(struct canvas *c, const struct shape *s, double bx0, double by0,
+draw_shape(struct au_canvas *c, const struct shape *s, double bx0, double by0,
     double bx1, double by1, uint32_t argb)
 {
 	pixman_image_t *mask, *src;
@@ -219,7 +219,7 @@ draw_shape(struct canvas *c, const struct shape *s, double bx0, double by0,
 
 	mask = pixman_image_create_bits(PIXMAN_a8, w, h, (uint32_t *)cov,
 	    stride);
-	src = draw_solid(argb);
+	src = au_draw_solid(argb);
 	pixman_image_composite32(PIXMAN_OP_OVER, src, mask, c->c_img,
 	    0, 0, 0, 0, x0, y0, w, h);
 	pixman_image_unref(src);
@@ -228,7 +228,7 @@ draw_shape(struct canvas *c, const struct shape *s, double bx0, double by0,
 }
 
 void
-draw_rrect(struct canvas *c, double x, double y, double w, double h,
+au_draw_rrect(struct au_canvas *c, double x, double y, double w, double h,
     double r, uint32_t argb)
 {
 	struct shape s;
@@ -244,8 +244,8 @@ draw_rrect(struct canvas *c, double x, double y, double w, double h,
 }
 
 void
-draw_rrect_stroke(struct canvas *c, double x, double y, double w, double h,
-    double r, double lw, uint32_t argb)
+au_draw_rrect_stroke(struct au_canvas *c, double x, double y, double w,
+    double h, double r, double lw, uint32_t argb)
 {
 	struct shape s;
 
@@ -261,22 +261,23 @@ draw_rrect_stroke(struct canvas *c, double x, double y, double w, double h,
 }
 
 void
-draw_circle(struct canvas *c, double cx, double cy, double r, uint32_t argb)
-{
-
-	draw_rrect(c, cx - r, cy - r, 2 * r, 2 * r, r, argb);
-}
-
-void
-draw_ring(struct canvas *c, double cx, double cy, double r, double lw,
+au_draw_circle(struct au_canvas *c, double cx, double cy, double r,
     uint32_t argb)
 {
 
-	draw_rrect_stroke(c, cx - r, cy - r, 2 * r, 2 * r, r, lw, argb);
+	au_draw_rrect(c, cx - r, cy - r, 2 * r, 2 * r, r, argb);
 }
 
 void
-draw_line(struct canvas *c, double x0, double y0, double x1, double y1,
+au_draw_ring(struct au_canvas *c, double cx, double cy, double r, double lw,
+    uint32_t argb)
+{
+
+	au_draw_rrect_stroke(c, cx - r, cy - r, 2 * r, 2 * r, r, lw, argb);
+}
+
+void
+au_draw_line(struct au_canvas *c, double x0, double y0, double x1, double y1,
     double lw, uint32_t argb)
 {
 	struct shape s;
@@ -297,7 +298,7 @@ draw_line(struct canvas *c, double x0, double y0, double x1, double y1,
  * as in the usual power symbol.
  */
 void
-draw_arc(struct canvas *c, double cx, double cy, double r, double lw,
+au_draw_arc(struct au_canvas *c, double cx, double cy, double r, double lw,
     double gap, uint32_t argb)
 {
 	struct shape s;

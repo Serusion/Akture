@@ -67,7 +67,7 @@ static struct greeter greeter;
 static int npresent;
 
 void
-x11_damage(struct greeter *g, const struct rect *r)
+x11_damage(struct greeter *g, const struct au_rect *r)
 {
 
 	if (r->r_w <= 0 || r->r_h <= 0)
@@ -158,9 +158,9 @@ render_setup(struct greeter *g)
 	g->g_session = 0;
 	(void)strlcpy(g->g_lastuser, "user", sizeof(g->g_lastuser));
 
-	ATF_REQUIRE_EQ(font_init(), 0);
-	ATF_REQUIRE((g->g_fui = face_open(fui)) != NULL);
-	ATF_REQUIRE((g->g_fclock = face_open(fclock)) != NULL);
+	ATF_REQUIRE_EQ(au_font_init(), 0);
+	ATF_REQUIRE((g->g_fui = au_face_open(fui)) != NULL);
+	ATF_REQUIRE((g->g_fclock = au_face_open(fclock)) != NULL);
 
 	/* One output over the whole frame, without a background image. */
 	x->x_width = T_WIDTH;

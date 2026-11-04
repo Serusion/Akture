@@ -35,34 +35,16 @@
 
 #include "akmsg.h"
 #include "akopt.h"
+#include "autuni.h"
 
 struct xkb_context;
 struct xkb_keymap;
 struct xkb_state;
-struct face;
-
-struct rect {
-	int		r_x, r_y, r_w, r_h;
-};
-
-/* draw.c: everything is drawn through a canvas clipped to the damage */
-struct canvas {
-	pixman_image_t	*c_img;
-	pixman_region32_t c_clip;
-};
-
-/* font.c: a face at a size and weight, with a fallback for missing glyphs */
-struct font {
-	struct face	*f_face;
-	struct face	*f_fallback;
-	double		 f_size;	/* pixels */
-	int		 f_weight;	/* 100 .. 900 */
-};
 
 #define G_MAXOUTPUTS	8
 
 struct output {
-	struct rect	 o_rect;
+	struct au_rect	 o_rect;
 	pixman_image_t	*o_bg;		/* NULL: solid background */
 	void		*o_map;		/* mmap(2)ed .akbg */
 	size_t		 o_maplen;
@@ -147,9 +129,9 @@ struct ui {
 
 	/* Geometry of the last paint, for clicks and damage. */
 	double		 u_scale;
-	struct rect	 u_bclock, u_blogin, u_btop, u_blogo;
-	struct rect	 u_rfield, u_rbutton, u_rsession, u_rother;
-	struct rect	 u_rlayout, u_rpower, u_rmenu;
+	struct au_rect	 u_bclock, u_blogin, u_btop, u_blogo;
+	struct au_rect	 u_rfield, u_rbutton, u_rsession, u_rother;
+	struct au_rect	 u_rlayout, u_rpower, u_rmenu;
 	double		 u_rowbase;	/* baseline of the session row */
 	int		 u_menurow;	/* height of a menu row */
 };
@@ -172,8 +154,8 @@ struct greeter {
 	char		 g_lastuser[AKMSG_NAMEMAX + 1];
 	uint32_t	 g_flags;	/* AKINIT_* */
 
-	struct face	*g_fui;
-	struct face	*g_fclock;
+	struct au_face	*g_fui;
+	struct au_face	*g_fclock;
 
 	struct x11	 g_x;
 	struct kbd	 g_kbd;
@@ -183,33 +165,6 @@ struct greeter {
 /* bg.c */
 void	bg_load(struct greeter *, struct output *);
 void	bg_free(struct output *);
-
-/* draw.c */
-pixman_image_t *draw_solid(uint32_t);
-uint32_t draw_alpha(uint32_t, unsigned int);
-void	draw_fill(struct canvas *, const struct rect *, uint32_t);
-void	draw_image(struct canvas *, pixman_image_t *, int, int);
-void	draw_rrect(struct canvas *, double, double, double, double, double,
-	    uint32_t);
-void	draw_rrect_stroke(struct canvas *, double, double, double, double,
-	    double, double, uint32_t);
-void	draw_circle(struct canvas *, double, double, double, uint32_t);
-void	draw_ring(struct canvas *, double, double, double, double, uint32_t);
-void	draw_line(struct canvas *, double, double, double, double, double,
-	    uint32_t);
-void	draw_arc(struct canvas *, double, double, double, double, double,
-	    uint32_t);
-
-/* font.c */
-struct face *face_open(const char *);
-int	font_init(void);
-double	font_width(const struct font *, const char *);
-double	font_ascent(const struct font *);
-double	font_descent(const struct font *);
-double	font_draw(struct canvas *, const struct font *, double, double,
-	    const char *, uint32_t);
-size_t	utf8_prev(const char *, size_t);
-size_t	utf8_len(const char *, size_t);
 
 /* ipc.c */
 int	ipc_init(struct greeter *);
@@ -237,7 +192,7 @@ void	ui_damage_all(struct greeter *);
 /* x11.c */
 int	x11_init(struct greeter *);
 void	x11_dispatch(struct greeter *, xcb_generic_event_t *);
-void	x11_damage(struct greeter *, const struct rect *);
+void	x11_damage(struct greeter *, const struct au_rect *);
 void	x11_present(struct greeter *);
 const struct output *x11_primary(const struct greeter *);
 

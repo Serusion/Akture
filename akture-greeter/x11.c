@@ -360,7 +360,7 @@ x11_dispatch(struct greeter *g, xcb_generic_event_t *ev)
 	const xcb_expose_event_t *ex;
 	const xcb_button_press_event_t *bp;
 	const xcb_randr_screen_change_notify_event_t *sc;
-	struct rect r;
+	struct au_rect r;
 	uint8_t type;
 
 	type = ev->response_type & 0x7f;
@@ -406,7 +406,7 @@ x11_dispatch(struct greeter *g, xcb_generic_event_t *ev)
 }
 
 void
-x11_damage(struct greeter *g, const struct rect *r)
+x11_damage(struct greeter *g, const struct au_rect *r)
 {
 
 	if (r->r_w <= 0 || r->r_h <= 0)

@@ -38,7 +38,7 @@
 #include <string.h>
 #include <syslog.h>
 
-#include "greeter.h"
+#include "autuni.h"
 
 /*
  * Text with FreeType.  Font files are given by path; fontconfig is
@@ -51,7 +51,7 @@
 #define WGHT_TAG	FT_MAKE_TAG('w', 'g', 'h', 't')
 #define UTF8_BAD	0xfffd
 
-struct face {
+struct au_face {
 	FT_Face		 fa_face;
 	int		 fa_wght;	/* index of the weight axis, or -1 */
 	FT_UInt		 fa_naxis;
@@ -63,7 +63,7 @@ struct face {
 
 struct glyph {
 	struct glyph	*gl_next;
-	const struct face *gl_face;
+	const struct au_face *gl_face;
 	uint32_t	 gl_cp;
 	int		 gl_size;	/* 26.6 */
 	int		 gl_weight;
@@ -76,16 +76,16 @@ static FT_Library font_lib;
 static struct glyph *glyph_hash[GLYPH_HASHSIZE];
 
 int
-font_init(void)
+au_font_init(void)
 {
 
 	return FT_Init_FreeType(&font_lib) == 0 ? 0 : -1;
 }
 
-struct face *
-face_open(const char *path)
+struct au_face *
+au_face_open(const char *path)
 {
-	struct face *fa;
+	struct au_face *fa;
 	FT_MM_Var *mm;
 	FT_UInt i;
 
@@ -117,7 +117,7 @@ face_open(const char *path)
 }
 
 static void
-face_setup(struct face *fa, double size, int weight)
+face_setup(struct au_face *fa, double size, int weight)
 {
 	FT_Fixed w;
 
@@ -188,7 +188,7 @@ utf8_next(const char *s, size_t *i)
  * Offset of the character before position i of s.
  */
 size_t
-utf8_prev(const char *s, size_t i)
+au_utf8_prev(const char *s, size_t i)
 {
 
 	while (i > 0) {
@@ -203,7 +203,7 @@ utf8_prev(const char *s, size_t i)
  * Number of characters in the first len bytes of s.
  */
 size_t
-utf8_len(const char *s, size_t len)
+au_utf8_len(const char *s, size_t len)
 {
 	size_t i, n;
 
@@ -213,7 +213,7 @@ utf8_len(const char *s, size_t len)
 }
 
 static struct glyph *
-glyph_render(struct face *fa, uint32_t cp, double size, int weight)
+glyph_render(struct au_face *fa, uint32_t cp, double size, int weight)
 {
 	struct glyph *gl;
 	FT_GlyphSlot slot;
@@ -266,9 +266,9 @@ glyph_render(struct face *fa, uint32_t cp, double size, int weight)
  * primary one does not have it.
  */
 static const struct glyph *
-font_glyph(const struct font *f, uint32_t cp)
+font_glyph(const struct au_font *f, uint32_t cp)
 {
-	struct face *fa;
+	struct au_face *fa;
 	struct glyph *gl;
 	unsigned int h;
 	int size;
@@ -294,7 +294,7 @@ font_glyph(const struct font *f, uint32_t cp)
 }
 
 double
-font_width(const struct font *f, const char *s)
+au_font_width(const struct au_font *f, const char *s)
 {
 	const struct glyph *gl;
 	double w;
@@ -309,7 +309,7 @@ font_width(const struct font *f, const char *s)
 }
 
 double
-font_ascent(const struct font *f)
+au_font_ascent(const struct au_font *f)
 {
 
 	face_setup(f->f_face, f->f_size, f->f_weight);
@@ -317,7 +317,7 @@ font_ascent(const struct font *f)
 }
 
 double
-font_descent(const struct font *f)
+au_font_descent(const struct au_font *f)
 {
 
 	face_setup(f->f_face, f->f_size, f->f_weight);
@@ -329,7 +329,7 @@ font_descent(const struct font *f)
  * coordinate after the last glyph.
  */
 double
-font_draw(struct canvas *c, const struct font *f, double x, double y,
+au_font_draw(struct au_canvas *c, const struct au_font *f, double x, double y,
     const char *s, uint32_t argb)
 {
 	const struct glyph *gl;
@@ -337,7 +337,7 @@ font_draw(struct canvas *c, const struct font *f, double x, double y,
 	size_t i;
 	int gx, gy;
 
-	src = draw_solid(argb);
+	src = au_draw_solid(argb);
 	for (i = 0; s[i] != '\0';) {
 		if ((gl = font_glyph(f, utf8_next(s, &i))) == NULL)
 			continue;

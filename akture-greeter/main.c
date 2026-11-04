@@ -63,10 +63,10 @@ fonts_init(struct greeter *g)
 	static const char *const fallbacks[] = { AKTURE_FONT_FALLBACKS };
 	size_t i;
 
-	if (font_init() == -1)
+	if (au_font_init() == -1)
 		return -1;
-	g->g_fui = face_open(g->g_opt[AKOPT_FONT_UI]);
-	g->g_fclock = face_open(g->g_opt[AKOPT_FONT_CLOCK]);
+	g->g_fui = au_face_open(g->g_opt[AKOPT_FONT_UI]);
+	g->g_fclock = au_face_open(g->g_opt[AKOPT_FONT_CLOCK]);
 	if (g->g_fui == NULL)
 		syslog(LOG_WARNING, "%s: cannot load", g->g_opt[AKOPT_FONT_UI]);
 	if (g->g_fclock == NULL)
@@ -75,7 +75,7 @@ fonts_init(struct greeter *g)
 
 	for (i = 0; g->g_fui == NULL && g->g_fclock == NULL &&
 	    i < __arraycount(fallbacks); i++)
-		g->g_fui = face_open(fallbacks[i]);
+		g->g_fui = au_face_open(fallbacks[i]);
 	if (g->g_fui == NULL)
 		g->g_fui = g->g_fclock;
 	if (g->g_fclock == NULL)
